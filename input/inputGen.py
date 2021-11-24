@@ -41,6 +41,7 @@ print("Median of deadlines", df['deadlines'].median())
 print("Min deadlines", min(deadlines))
 print("Max deadlines", max(deadlines))
 
+print("No. of unique profts", len(pd.unique(df['profits'])))
 print("Median of profits", df['profits'].median())
 print("Min profits", min(profits))
 print("Max profits", max(profits))
