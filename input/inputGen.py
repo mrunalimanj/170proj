@@ -13,13 +13,13 @@ f = open(str(n) + ".in", "w")
 f.write(str(n) + "\n")
 
 for i in range(1, n+1):
-    t = randint(0, 1440)
+    t = randint(1, 1440)
     deadlines.append(t)
 
-    d = randint(0, 60)
+    d = randint(1, 60)
     durations.append(d)
 
-    p = round(uniform(0, 100), randint(0, 5))
+    p = round(uniform(0.0001, 99.999), randint(0, 3))
     profits.append(p)
 
     # Checks
