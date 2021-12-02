@@ -1,0 +1,3 @@
+[submodule "project-fa21-skeleton"]
+	path = project-fa21-skeleton
+	url = https://github.com/Berkeley-CS170/project-fa21-skeleton.git
