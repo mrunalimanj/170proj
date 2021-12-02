@@ -31,8 +31,8 @@ def findMaxperfect_benefit(arr, n):
      
     # Sort tasks according to deadline time
     arr = sorted(arr, key = cmp_to_key(taskComparator))
-    print(arr)
     #arr = arr[x for x in arr if ]
+    final_tasks = []
  
     # Create an array to store solutions of subproblems. table[i] stores the perfect_benefit for tasks till arr[i]
     # (including arr[i])
@@ -48,6 +48,8 @@ def findMaxperfect_benefit(arr, n):
          
         if l != -1:
             inclProf += table[l]
+            if l+1 not in final_tasks:
+                final_tasks.append(l+1)
  
         # Store maximum of including and excluding
         table[i] = max(inclProf, table[i - 1])
@@ -56,7 +58,7 @@ def findMaxperfect_benefit(arr, n):
     # allocated for table[]
     result = table[n - 1]
  
-    return result
+    return final_tasks
 
 
 
@@ -65,7 +67,7 @@ if __name__ == '__main__':
     for folder in os.listdir('inputs/'):
         for filename in os.listdir('inputs/' + folder + '/'):
             input_path = 'inputs/' + folder + '/' + filename
-            output_path = 'outputs/' + input_path[:-3] + '.out'
+            output_path = 'outputs/' + folder + '/' + filename[:-3] + '.out'
             tasks = read_input_file(input_path)
             output = solve(tasks)
             print("Output", output)
