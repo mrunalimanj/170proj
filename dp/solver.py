@@ -2,14 +2,14 @@ from parse import read_input_file, write_output_file
 import os
 from functools import cmp_to_key
 
-def solve(tasks):
+def solve(tasks, name):
     """
     Args:
         tasks: list[Task], list of igloos to polish
     Returns:
         output: list of igloos in order of polishing  
     """
-    return findMaxperfect_benefit(tasks, len(tasks))
+    return findMaxperfect_benefit(tasks, len(tasks), name)
 
 # A utility function that is used for sorting events according to deadline time
 def taskComparator(s1, s2):
@@ -27,17 +27,25 @@ def latestNonConflict(arr, i):
     return -1
  
 # The main function that returns the maximum possible perfect_benefit from given array of tasks
-def findMaxperfect_benefit(arr, n):
+def findMaxperfect_benefit(arr, n, name):
      
     # Sort tasks according to deadline time
     arr = sorted(arr, key = cmp_to_key(taskComparator))
     #arr = arr[x for x in arr if ]
     final_tasks = []
+
  
-    # Create an array to store solutions of subproblems. table[i] stores the perfect_benefit for tasks till arr[i]
-    # (including arr[i])
+    # Create an array to store solutions of subproblems. 
     table = [None] * n
-    table[0] = arr[0].perfect_benefit
+    
+    # Setting up time (starting at minute 0)
+    time_so_far = 0
+    minutes_late = time_so_far + arr[0].get_duration() - arr[0].get_deadline()
+    
+    #table[i] stores the benefit (taking into account timesteps) for tasks till arr[i] (including arr[i])
+    # we'll start by assuming we complete the first task
+    time_so_far = arr[0].get_duration()
+    table[0] = arr[0].get_late_benefit(minutes_late)
  
     # Fill entries in M[] using recursive property
     for i in range(1, n):
@@ -46,10 +54,9 @@ def findMaxperfect_benefit(arr, n):
         inclProf = arr[i].perfect_benefit
         l = latestNonConflict(arr, i)
          
-        if l != -1:
+        if l != -1 and l+1 not in final_tasks:
             inclProf += table[l]
-            if l+1 not in final_tasks:
-                final_tasks.append(l+1)
+            final_tasks.append(l+1)
  
         # Store maximum of including and excluding
         table[i] = max(inclProf, table[i - 1])
@@ -57,7 +64,7 @@ def findMaxperfect_benefit(arr, n):
     # Store result and free dynamic memory
     # allocated for table[]
     result = table[n - 1]
- 
+    print('Result for file {}: {}'.format(name, result))
     return final_tasks
 
 
@@ -69,6 +76,6 @@ if __name__ == '__main__':
             input_path = 'inputs/' + folder + '/' + filename
             output_path = 'outputs/' + folder + '/' + filename[:-3] + '.out'
             tasks = read_input_file(input_path)
-            output = solve(tasks)
-            print("Output", output)
+            output = solve(tasks, filename[:-3])
+            #print("Output", output)
             write_output_file(output_path, output)
