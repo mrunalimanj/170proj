@@ -1,42 +1,24 @@
-from os import curdir
-import numpy as np
 import sys
+import numpy as np
+from parse import read_input_file, read_output_file, write_output_file
+
 
 TEMP = 60
 
 # run on command line with anneal.py path/to/input.in path/to/soln.out
-def parse_input(input_file):
-    with open(input_file, 'r') as f:
-        num_igloos = int(f.readline()[:-1])
-        igloos = f.readlines()
-    
-    return num_igloos, igloo_data 
 
-
-def parse_soln(initial_output_path):
-
-    # "unpickle" greedy solution:
-    with open(greedy_soln, 'r') as g:
-        initial_task_order = list(g.readlines()) # not sure what format this will appear in
-        # also, make sure there is no bottom /new line, that could get improperly parsed
-
-
-    return initial_task_order
-
-def calc_profit(order, igloo_data):
+def calc_profit(order, tasks):
     total_profit = 0
     timestep = 0
-    for ig in order:
-        prof_ig, duration_ig, deadline_ig = igloo_data["profit"][ig], igloo_data["duration"][ig], igloo_data["deadline"][ig]:
-
-        if timestep + duration_ig >= deadline_ig:
-            # good- just add profit.
-            total_profit += prof_ig
-
+    ## TODO: fix this 
+    for ig_i in order:
+        ig = tasks[ig_i]
+        if ig.deadline >= ig.duration + timestep:
+                total_profit += ig.profit
         else:
-            exceeded = (duration_ig + time_now - deadline_ig)
-            total_profit += prof_ig * np.exp(-0.0170 * exceeded) 
-    
+            exceeded = ig.duration + timestep - ig.deadline
+            total_profit += ig.profit * np.exp(-0.0170 * exceeded) 
+
     return total_profit
 
 def get_new_order(order, i, j):
@@ -45,7 +27,6 @@ def get_new_order(order, i, j):
         ind_i, ind_j = order.index(i), order.index(j)
         order[ind_i], order[ind_j] = j, i
         return order
-
 
     elif i in order or j in order:
         # how to swap? if one of the tasks wasnt even able to be scheduled?
@@ -64,40 +45,35 @@ def get_new_order(order, i, j):
     else:
         return order # no point in switching, need to resample 
 
-def validate_order(order):
+def validate_order(order, tasks):
     total_time = 0 
     for ig in order:
-        total_time += igloo_data["duration"][ig]
+        total_time += tasks[ig].duration
     return total_time < 1440
     
 
-
-def anneal(input_file, initial_output_path):
-    num_igloos, igloo_data = parse_input(input_file)
+def anneal(tasks, initial_task_order):
+    num_igloos = len(tasks)
 
     # get number of tasks - helps to have this number to properly greedily sample
-
-    initial_task_order = parse_soln(initial_output_path)
-    task_order = initial_task_order = [int(t[:-1]) for t in initial_task_order]
     # okay, now we have numbers and they are ordered.
-    tasks_currently_scheduled = len(initial_task_order)
-    curr_prof = total_profit = calc_profit(initial_task_order, igloo_data)
+    # tasks_currently_scheduled = len(initial_task_order)
+    curr_prof = total_profit = calc_profit(initial_task_order, tasks)
 
     iters = 0
     while curr_prof < total_profit * 3 or iters < 250:
         #simulated annealing: pick two to swap
         i, j = np.random.choice(num_igloos, 2, replace=False)
         new_order = get_new_order(task_order, i, j)
-        if not validate_order(new_order): # total duration cannot exceed 1440.
+        if not validate_order(new_order, tasks): # total duration cannot exceed 1440.
             continue # need to resample 
-        new_prof = calc_profit(new_order, igloo_data)
+        new_prof = calc_profit(new_order, tasks)
         if curr_prof == new_prof:
             continue # need to resample
 
         elif curr_prof > new_prof:
             task_order = new_order
             continue
-
 
         elif new_prof > curr_prof:
             iters += 1
@@ -107,25 +83,17 @@ def anneal(input_file, initial_output_path):
 
     return task_order
 
-def save_output(order, initial_output_path):
-    # will overwrite first set of outputs we passed in to optimize 
-    with open(initial_output_path, "w") as f:
-        f.write(order)
-
-
 def main():
-    input_file = sys.argv[1]
-    initial_output_path = sys.argv[2]
-    new_order = anneal(input_file, initial_output_path)
-    save_output(new_order)
+    for input_folder in os.listdir('../project-fa21-skeleton/inputs/'):
+        for file in os.listdir(f'../project-fa21-skeleton/inputs/{input_folder}'):
+            input_path = '../project-fa21-skeleton/inputs/{input_folder}' + "/" + file
+            tasks = read_input_file(input_path) # this is a list of tasks. 
+            for output_name in 'profit', 'deadline':
+                output_path = output_name + '/outputs/' + input_path[:-3] + '.out'
+                initial_order = read_output_file(output_path)
+                output = anneal(tasks, initial_order)
+                write_output_file(output_path, output)
+
 
     
-
-    
-
-
-
-
-
-
 
