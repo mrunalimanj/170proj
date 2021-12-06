@@ -1,6 +1,16 @@
 from parse import read_input_file, write_output_file
 import os
 
+def decide_profit(ig, time_now):
+    if ig.deadline >= ig.duration + time_now:
+        exp_profit = ig.perfect_benefit
+    else:
+        exceeded = ig.duration + time_now - ig.deadline
+        exp_profit = ig.perfect_benefit * np.exp(-0.0170 * exceeded) 
+    
+    return exp_profit
+
+    
 def solve(tasks, name):
     n = len(tasks)
     total_time = 1440
