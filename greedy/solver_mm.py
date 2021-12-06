@@ -3,6 +3,15 @@ import numpy as np
 from parse import read_input_file, write_output_file
 import os
 
+def decide_profit(ig, time_now):
+    if ig.deadline >= ig.duration + time_now:
+        exp_profit = ig.perfect_benefit
+    else:
+        exceeded = ig.duration + time_now - ig.deadline
+        exp_profit = ig.perfect_benefit * np.exp(-0.0170 * exceeded) 
+    
+    return exp_profit
+
 def run_alg_greedy_best_profit(tasks):
     count = len(tasks)
     time_now = 0
@@ -27,25 +36,21 @@ def run_alg_greedy_best_profit(tasks):
         profits_at_this_time = []
         for ig_i in valid_igloos:
             ig = tasks[ig_i]
-            if ig.deadline >= ig.duration + time_now:
-                exp_profit = ig.perfect_benefit
-            else:
-                exceeded = ig.duration + time_now - ig.deadline
-                exp_profit = ig.perfect_benefit * np.exp(-0.0170 * exceeded) 
-
-            profits_at_this_time.append((ig_i, exp_profit))
+            profits_at_this_time.append((ig_i, decide_profit(ig, time_now)))
         
         next_i, profit_next_i = max(profits_at_this_time, key = lambda ig: ig[1])
+        
 
         # operate using this igloo.
         igloos_chosen.append(next_i)
-        next_ig = tasks[ig_i]
-        profit += profit_next_i
+        next_ig = tasks[next_i]
+        #print(next_i, next_ig)
+        profit += decide_profit(next_ig, time_now)
 
         time_now += next_ig.duration
     
 
-    return igloos_chosen, profit
+    return igloos_chosen, profit, time_now
 
 
 def run_alg_greedy_nearest_deadline(tasks):
@@ -74,20 +79,28 @@ def run_alg_greedy_nearest_deadline(tasks):
 
     
         # operate using this igloo.
+        #print(next_i, next_ig)
         igloos_chosen.append(next_i)
-
-        if next_ig.deadline >= next_ig.duration + time_now:
-            # good- just add profit.
-            profit += next_ig.perfect_benefit
-
-        else:
-            exceeded = (next_ig.duration + time_now - next_ig.deadline)
-            profit += next_ig.perfect_benefit * np.exp(-0.0170 * exceeded) 
+        profit += decide_profit(next_ig, time_now)
 
         time_now += next_ig.duration
 
-    return igloos_chosen, profit
+    return igloos_chosen, profit, time_now
 
+
+def check_output(tasks, order, profit, time):
+    prof = 0
+    time_now = 0
+    for i in order:
+        
+        ig = tasks[i - 1]
+        prof += decide_profit(ig, time_now)
+
+        time_now += ig.duration
+    if profit != prof or time_now != time:
+        raise Exception(f"profit was expected to be {profit} but was {prof} and time used was supposed to be {time} but is actually {time_now}")
+    return True
+    
 
 def main():
     for input_folder in os.listdir('../project-fa21-skeleton/inputs/'):
@@ -99,14 +112,18 @@ def main():
                 continue
             try:
                 tasks = read_input_file(input_path) # this is a list of tasks. 
+                
             except:
                 print(input_path)
                 raise
 
             for solver, name in [(run_alg_greedy_best_profit, 'profit'), (run_alg_greedy_nearest_deadline, 'deadline')]:
                 output_path = name + '/outputs/' + input_folder + "/" + file[:-3] + '.out'
-                output, profit = solver(tasks)
+                output, profit, time_now = solver(tasks)
                 output = [o + 1 for o in output]
+                # verify output:
+                check_output(tasks, output, profit, time_now)
+                print(len(output), profit)
                 if not os.path.exists(name + '/outputs/' + input_folder + "/"):
                     os.makedirs(name + '/outputs/' + input_folder + "/")
                 write_output_file(output_path, output)
