@@ -11,21 +11,36 @@ def solve(tasks, name):
     """
     return findMaxperfect_benefit(tasks, len(tasks), name)
 
-# A utility function that is used for sorting events according to deadline time
+# Sorting events by deadline only
 def taskComparator(s1, s2):
-    if s1.deadline - s1.duration < 1440 and s2.deadline - s2.duration < 1440:
-        return s1.deadline < s2.deadline and s1.deadline - s1.duration < s2.deadline - s2.duration
+    start_1 = s1.get_deadline() - s1.get_duration()
+    start_2 = s2.get_deadline() - s2.get_duration()
+    if  start_1 < 1440 and  start_2 < 1440:
+        return s1.get_deadline() < s2.get_deadline()
+        
+        #return s1.deadline < s2.deadline and s1.deadline - s1.duration < s2.deadline - s2.duration
  
-# Find the latest task (in sorted array) that doesn't conflict with the task[i]. If there
+# Find the recent task (in sorted array) that doesn't conflict with the task[k] using binary search. If there
 # is no compatible task, then it returns -1
-def latestNonConflict(arr, i):
-     
-    for j in range(i - 1, -1, -1):
-        if arr[j].deadline <= arr[i - 1].deadline - arr[i - 1].duration:
-            return j
-             
+def recentNonConflict(arr, k):
+
+    i, j = 0, k - 1
+    start = arr[k].deadline - arr[k].get_duration()
+
+    while i <= j:
+        m = (i+j) // 2
+        if arr[m].deadline > start:
+            j = mid - 1
+        else:
+            if arr[m + 1].finish <= start:
+                i = m + 1
+            else:
+                return m
     return -1
+
  
+
+
 # The main function that returns the maximum possible perfect_benefit from given array of tasks
 def findMaxperfect_benefit(arr, n, name):
      
@@ -48,7 +63,7 @@ def findMaxperfect_benefit(arr, n, name):
     time_so_far = arr[0].get_duration()
     table[0] = arr[0].get_late_benefit(minutes_late)
  
-    # Fill entries in M[] using recursive property
+    # Fill entries
     for i in range(1, n):
 
         # Start by finding the benefit of including the current task
@@ -56,7 +71,7 @@ def findMaxperfect_benefit(arr, n, name):
         inclProf = arr[i].get_late_benefit(minutes_late)
 
         
-        l = latestNonConflict(arr, i)
+        l = recentNonConflict(arr, i)
          
         if l != -1 and l+1 not in final_tasks:
             inclProf += table[l]

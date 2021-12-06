@@ -10,7 +10,7 @@ def decide_profit(ig, time_now):
     
     return exp_profit
 
-    
+
 def solve(tasks, name):
     n = len(tasks)
     total_time = 1440
@@ -22,7 +22,7 @@ def solve(tasks, name):
 
     for i in range(1, n+1):
         for time in range(1, total_time+1):
-            # Accesing task i-1 since we are starting at 1 and going to n
+            # Accessing task i-1 since we are starting at 1 and going to n
             task = sorted_tasks[i-1]
             duration = task.get_duration()
             # Don't include task i-1 if its duration isn't as large as time so far
