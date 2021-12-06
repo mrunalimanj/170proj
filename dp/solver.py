@@ -5,7 +5,7 @@ def solve(tasks, name):
     n = len(tasks)
     total_time = 1440
     profits_so_far = [[0] * (total_time+1) for i in range(n+1)]
-    used_tasks = [0] * (n+1)
+    profits_used = [0]* (n+1)
     
     ###########Sorting#############
     sorted_tasks = sorted(tasks, key = lambda x: x.get_deadline())
@@ -18,28 +18,34 @@ def solve(tasks, name):
             # Don't include task i-1 if its duration isn't as large as time so far
             if duration > time: 
                 profits_so_far[i][time] = profits_so_far[i-1][time]
-                used_tasks[i-1] += 1
             else:
                 minutes_late = time + duration - task.get_deadline()
                 profit = task.get_late_benefit(minutes_late)
+                print('minutes_late: ', minutes_late)
+                print('profit: ', profit)
+                #profit = task.get_max_benefit()
 
                 # Same as max(profits_so_far[i-1][time], profit + profits_so_far[i-1][time-duration])
                 # Done for the sake of keeping track of the tasks
                 using_profit = profit + profits_so_far[i-1][time-duration]
                 not_profit = profits_so_far[i-1][time]
 
+                # Add the current task
                 if(using_profit > not_profit):
                     profits_so_far[i][time] = using_profit
-                    used_tasks[i] += 1
+                    # if i == n:
+                    #     print('task :', i)
+                # Don't add the current task
                 else:
                     profits_so_far[i][time] = not_profit
-                    used_tasks[i-1] += 1
+            
+            #profits_used[i] = profit
                 
 
     total_profit = profits_so_far[n][total_time]
 
     
-    return used_tasks
+    return 0
 
 
 
