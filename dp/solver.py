@@ -18,7 +18,9 @@ def solve(tasks, name):
     profits_used = [0]* (n+1)
     
     ###########Sorting#############
-    sorted_tasks = sorted(tasks, key = lambda x: x.get_deadline())
+    valid_tasks = [task for task in tasks if task.get_deadline() <= 1440 and (x.get_deadline()-x.get_duration()) < 1440]
+    sorted_tasks = sorted(valid_tasks, key = lambda x: x.get_deadline())
+
 
     for i in range(1, n+1):
         for time in range(1, total_time+1):
