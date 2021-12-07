@@ -94,5 +94,5 @@ if __name__ == '__main__':
             output_path = 'outputs/' + folder + '/' + filename[:-3] + '.out'
             tasks = read_input_file(input_path)
             output = solve(tasks, filename[:-3])
-            #print("Output", output)
-            write_output_file(output_path, output)
+            print("Output", output)
+            #write_output_file(output_path, output)
