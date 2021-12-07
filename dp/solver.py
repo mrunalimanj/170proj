@@ -1,5 +1,6 @@
 from parse import read_input_file, write_output_file
 import os
+import numpy as np
 
 def decide_profit(ig, time_now):
     if ig.deadline >= ig.duration + time_now:
@@ -10,6 +11,18 @@ def decide_profit(ig, time_now):
     
     return exp_profit
 
+def check_output(tasks, order, profit, time):
+    prof = 0
+    time_now = 0
+    for i in order:
+        
+        ig = tasks[i - 1]
+        prof += decide_profit(ig, time_now)
+
+        time_now += ig.duration
+    if profit != prof or time_now != time:
+        raise Exception(f"profit was expected to be {profit} but was {prof} and time used was supposed to be {time} but is actually {time_now}")
+    return True
 
 def solve(tasks, name):
     n = len(tasks)
@@ -19,8 +32,8 @@ def solve(tasks, name):
     final_tasks = []
     
     ###########Sorting#############
-    valid_tasks = [task for task in tasks if task.get_deadline() <= 1440 and (x.get_deadline()-x.get_duration()) < 1440]
-    sorted_tasks = sorted(valid_tasks, key = lambda x: x.get_deadline())
+    #valid_tasks = [task for task in tasks if task.get_deadline() <= 1440 and (x.get_deadline()-x.get_duration()) < 1440]
+    sorted_tasks = sorted(tasks, key = lambda x: x.get_deadline())
 
 
     for i in range(1, n+1):
@@ -66,7 +79,9 @@ def solve(tasks, name):
 
             t -= task.get_duration()
 
-    return final_time
+    final_tasks.reverse()
+
+    return final_tasks
 
 
 
@@ -78,5 +93,6 @@ if __name__ == '__main__':
             output_path = 'outputs/' + folder + '/' + filename[:-3] + '.out'
             tasks = read_input_file(input_path)
             output = solve(tasks, filename[:-3])
-            print("Output", output)
-            #write_output_file(output_path, output)
+            #print(check_output(tasks, output[0], output[1], 1440))
+            #print("Output", output)
+            write_output_file(output_path, output)
